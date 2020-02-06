@@ -1,7 +1,7 @@
 from functools import reduce
 from operator import mul
 from tensorflow.keras.datasets.mnist import load_data
-from tensorflow.keras.layers import Input, Dense, LeakyReLU, Flatten, Conv2D, MaxPooling2D, Dropout, Reshape, UpSampling2D
+from tensorflow.keras.layers import Input, Dense, LeakyReLU, Flatten, Conv2D, MaxPooling2D, Dropout, Reshape, UpSampling2D, Conv2DTranspose
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 
@@ -46,7 +46,6 @@ def dense_decoder(shape, neurons, dim):
     return Model(i, x, name='Dense-Decoder')
 
 def conv_decoder(shape, neurons, dim):
-    # flattened = reduce(mul, shape)
     i = Input(shape=dim)
     x = Dense(units=neurons)(i)
     x = LeakyReLU()(x)
@@ -59,3 +58,15 @@ def conv_decoder(shape, neurons, dim):
     x = Conv2D(32, padding='same', kernel_size=(3,3), activation='relu')(x)
     x = Conv2D(1, padding='same', kernel_size=(3,3), activation='relu')(x)
     return Model(i, x, name='Conv-Decoder')
+
+def conv_decoder_transpose(shape, neurons, dim):
+    i = Input(shape=dim)
+    x = Dense(units=neurons)(i)
+    x = LeakyReLU()(x)
+    x = Dense(units=3136)(x)
+    x = LeakyReLU()(x)
+    x = Reshape((7, 7, 64))(x)
+    x = Conv2DTranspose(filters=64, kernel_size=(3,3), strides=(2,2), padding='same', activation='relu')(x)
+    x = Conv2DTranspose(filters=32, kernel_size=(3,3), strides=(2,2), padding='same', activation='relu')(x)
+    x = Conv2D(1, padding='same', kernel_size=(3,3), activation='relu')(x)
+    return Model(i, x, name='Conv-Decoder-Transpose')
